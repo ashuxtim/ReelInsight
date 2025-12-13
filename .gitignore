@@ -1,0 +1,51 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+
+# --- Python & Backend ---
+__pycache__/
+*.py[cod]
+*$py.class
+backend/venv/
+venv/
+.env
+
+# --- Node & Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+.DS_Store
+
+# --- ReelInsight Data (CRITICAL: Do not upload these!) ---
+# We ignore the heavy video files and the database
+data/raw_videos/*
+data/processed_audio/*
+data/processed_frames/*
+data/chroma_db/
+
+# Keep the folder structure, just ignore content
+!data/raw_videos/.gitkeep
+!data/processed_audio/.gitkeep
+!data/processed_frames/.gitkeep
