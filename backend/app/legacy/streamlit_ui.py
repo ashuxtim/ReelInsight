@@ -1,3 +1,12 @@
+"""
+LEGACY UI (Deprecated)
+
+This Streamlit-based UI was used during early prototyping of ReelInsight.
+It has since been replaced by a React frontend.
+
+Kept only for architectural evolution reference.
+"""
+
 import streamlit as st
 import sys
 import os
