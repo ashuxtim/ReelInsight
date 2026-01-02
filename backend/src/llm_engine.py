@@ -3,8 +3,30 @@ import json
 from pathlib import Path
 from src.config import AUDIO_OUTPUT_PATH
 
-# CONFIG: Model Name
-MODEL_NAME = "llama3.2:3b"
+# --- DYNAMIC MODEL SELECTION ---
+def get_active_model():
+    """
+    Connects to Ollama and retrieves the first available model.
+    Returns None if no models are found or connection fails.
+    """
+    try:
+        list_response = ollama.list()
+        # ollama.list() returns a dict: {'models': [{'name': 'gemma:7b', ...}]}
+        if 'models' in list_response and len(list_response['models']) > 0:
+            model = list_response['models'][0]['name']
+            print(f"✅ Ollama connected. Using model: {model}")
+            return model
+        else:
+            print("❌ No models found in Ollama. Please run `ollama pull <model>`")
+            return None
+    except Exception as e:
+        print(f"❌ Could not connect to Ollama: {e}")
+        return None
+
+# Initialize Model (Happens when script loads)
+MODEL_NAME = get_active_model()
+
+# -------------------------------
 
 def get_transcript_path(video_id: str):
     """Finds the transcript in the unified processed_audio folder"""
@@ -44,6 +66,9 @@ def get_full_transcript(video_id: str) -> str:
         return None
 
 def summarize_video(video_id: str):
+    if not MODEL_NAME:
+        return "⚠️ Error: No AI model installed or Ollama is not running."
+
     print(f"🦙 Ollama: Summarizing {video_id}...")
     transcript = get_full_transcript(video_id)
     if not transcript: return "⚠️ Error: No transcript found. (Did you process the video?)"
@@ -63,6 +88,9 @@ def summarize_video(video_id: str):
         return f"Ollama Error: {str(e)}"
 
 def ask_question(query: str, search_results: list):
+    if not MODEL_NAME:
+        return "⚠️ Error: No AI model installed or Ollama is not running."
+
     print(f"🦙 Ollama: Answering '{query}'...")
     context_text = ""
     for r in search_results:
@@ -91,6 +119,10 @@ def ask_question(query: str, search_results: list):
 
 def generate_chapters(video_id: str):
     """Generates timestamped chapters using LLM"""
+    if not MODEL_NAME:
+        print("❌ Cannot generate chapters: No model found.")
+        return []
+
     print(f"🦙 Ollama: Generating chapters for {video_id}...")
     transcript = get_full_transcript(video_id)
     if not transcript: return []

@@ -1,4 +1,5 @@
 import json
+import torch
 from pathlib import Path
 from faster_whisper import WhisperModel
 from src.config import AUDIO_OUTPUT_PATH
@@ -6,11 +7,26 @@ from src.config import AUDIO_OUTPUT_PATH
 class AudioTranscriber:
     def __init__(self, model_size="base"):
         """
-        Loads the Whisper model.
+        Loads the Whisper model. Auto-detects GPU vs CPU.
         """
-        print(f"🧠 Loading Faster-Whisper ({model_size}) model on CPU...")
-        # int8 is the key for speed
-        self.model = WhisperModel(model_size, device="cpu", compute_type="int8")
+        # 1. Auto-Detect Hardware
+        if torch.cuda.is_available():
+            self.device = "cuda"
+            self.compute_type = "float16" # Standard for GPU
+            print(f"🚀 Found NVIDIA GPU. Loading Faster-Whisper ({model_size}) on CUDA...")
+        else:
+            self.device = "cpu"
+            self.compute_type = "int8"    # Optimized for CPU
+            print(f"🐢 No GPU found. Loading Faster-Whisper ({model_size}) on CPU...")
+
+        # 2. Load Model
+        try:
+            self.model = WhisperModel(model_size, device=self.device, compute_type=self.compute_type)
+        except Exception as e:
+            print(f"⚠️ GPU Load Failed ({e}). Fallback to CPU...")
+            self.device = "cpu"
+            self.compute_type = "int8"
+            self.model = WhisperModel(model_size, device="cpu", compute_type="int8")
     
     def transcribe(self, filename: str):
         audio_path = AUDIO_OUTPUT_PATH / filename
@@ -20,7 +36,7 @@ class AudioTranscriber:
 
         print(f"🎙️ Transcribing {filename}...")
         
-        # OPTIMIZATION: beam_size=1 (Greedy search) is much faster
+        # OPTIMIZATION: beam_size=1 (Greedy search) is much faster for ingestion
         segments, info = self.model.transcribe(str(audio_path), beam_size=1)
 
         # Convert generator to list
