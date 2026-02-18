@@ -3,10 +3,10 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, Check, Video, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const VideoSelector = ({ 
-  videos = [], 
-  selected = "All Videos", 
-  onChange, 
+const VideoSelector = ({
+  videos = [],
+  selected = "All Videos",
+  onChange,
   mode = "compact", // "sidebar" or "compact"
   allowAll = true,
   placeholder = "Search videos..."
@@ -19,7 +19,7 @@ const VideoSelector = ({
   const focusedItemRef = useRef(null);
 
   // Filter videos based on search
-  const filteredVideos = videos.filter(v => 
+  const filteredVideos = videos.filter(v =>
     (v.title || v.id || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -29,7 +29,7 @@ const VideoSelector = ({
   // Close dropdown when clicking outside (compact mode only)
   useEffect(() => {
     if (mode !== "compact") return;
-    
+
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setIsOpen(false);
@@ -43,15 +43,55 @@ const VideoSelector = ({
     }
   }, [isOpen, mode]);
 
+  // Handle selection
+  const handleSelect = (videoId) => {
+    onChange(videoId);
+    if (mode === "compact") {
+      setIsOpen(false);
+      setSearchQuery("");
+      setFocusedIndex(-1);
+    }
+  };
+
+  // Auto-scroll focused item into view
+  useEffect(() => {
+    if (focusedItemRef.current) {
+      focusedItemRef.current.scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth'
+      });
+    }
+  }, [focusedIndex]);
+
+  // Reset focused index when opening dropdown
+  useEffect(() => {
+    if (isOpen) {
+      // Find current selected index
+      const selectedIndex = fullList.findIndex(item => {
+        if (item === "All Videos") return selected === "All Videos";
+        return item.id === selected;
+      });
+      setFocusedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Get display name for selected video
+  const getSelectedName = () => {
+    if (selected === "All Videos") return `All Videos (${videos.length})`;
+    const video = videos.find(v => v.id === selected);
+    return video?.title || video?.id || "Select video";
+  };
+
   // Keyboard navigation
   useEffect(() => {
     if (!isOpen || mode !== "compact") return;
 
     const handleKeyDown = (e) => {
-      switch(e.key) {
+      switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setFocusedIndex(prev => 
+          setFocusedIndex(prev =>
             prev < fullList.length - 1 ? prev + 1 : prev
           );
           break;
@@ -81,45 +121,6 @@ const VideoSelector = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, focusedIndex, fullList, mode]);
 
-  // Auto-scroll focused item into view
-  useEffect(() => {
-    if (focusedItemRef.current) {
-      focusedItemRef.current.scrollIntoView({
-        block: 'nearest',
-        behavior: 'smooth'
-      });
-    }
-  }, [focusedIndex]);
-
-  // Reset focused index when opening dropdown
-  useEffect(() => {
-    if (isOpen) {
-      // Find current selected index
-      const selectedIndex = fullList.findIndex(item => {
-        if (item === "All Videos") return selected === "All Videos";
-        return item.id === selected;
-      });
-      setFocusedIndex(selectedIndex >= 0 ? selectedIndex : 0);
-    }
-  }, [isOpen]);
-
-  // Get display name for selected video
-  const getSelectedName = () => {
-    if (selected === "All Videos") return `All Videos (${videos.length})`;
-    const video = videos.find(v => v.id === selected);
-    return video?.title || video?.id || "Select video";
-  };
-
-  // Handle selection
-  const handleSelect = (videoId) => {
-    onChange(videoId);
-    if (mode === "compact") {
-      setIsOpen(false);
-      setSearchQuery("");
-      setFocusedIndex(-1);
-    }
-  };
-
   // SIDEBAR MODE (for Chat page - left panel)
   if (mode === "sidebar") {
     return (
@@ -142,21 +143,18 @@ const VideoSelector = ({
           {allowAll && (
             <button
               onClick={() => handleSelect("All Videos")}
-              className={`w-full px-4 py-3 flex items-center justify-between transition-all ${
-                selected === "All Videos"
-                  ? 'bg-indigo-600/20 border-l-4 border-indigo-500'
-                  : 'hover:bg-slate-700/30 border-l-4 border-transparent'
-              }`}
+              className={`w-full px-4 py-3 flex items-center justify-between transition-all ${selected === "All Videos"
+                ? 'bg-indigo-600/20 border-l-4 border-indigo-500'
+                : 'hover:bg-slate-700/30 border-l-4 border-transparent'
+                }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  selected === "All Videos" ? 'bg-indigo-600/30' : 'bg-slate-700/50'
-                }`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selected === "All Videos" ? 'bg-indigo-600/30' : 'bg-slate-700/50'
+                  }`}>
                   <Video size={16} className={selected === "All Videos" ? 'text-indigo-400' : 'text-slate-500'} />
                 </div>
-                <span className={`text-sm font-medium ${
-                  selected === "All Videos" ? 'text-indigo-300' : 'text-slate-400'
-                }`}>
+                <span className={`text-sm font-medium ${selected === "All Videos" ? 'text-indigo-300' : 'text-slate-400'
+                  }`}>
                   All Videos ({videos.length})
                 </span>
               </div>
@@ -169,24 +167,22 @@ const VideoSelector = ({
               <button
                 key={video.id}
                 onClick={() => handleSelect(video.id)}
-                className={`w-full px-4 py-3 flex items-center justify-between transition-all ${
-                  selected === video.id
-                    ? 'bg-indigo-600/20 border-l-4 border-indigo-500'
-                    : 'hover:bg-slate-700/30 border-l-4 border-transparent'
-                }`}
+                className={`w-full px-4 py-3 flex items-center justify-between transition-all ${selected === video.id
+                  ? 'bg-indigo-600/20 border-l-4 border-indigo-500'
+                  : 'hover:bg-slate-700/30 border-l-4 border-transparent'
+                  }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <img 
-                    src={video.thumbnail} 
+                  <img
+                    src={video.thumbnail}
                     alt=""
                     className="w-12 h-8 rounded object-cover shrink-0"
                     onError={(e) => {
                       e.target.style.display = 'none';
                     }}
                   />
-                  <span className={`text-sm truncate ${
-                    selected === video.id ? 'text-indigo-300 font-medium' : 'text-slate-400'
-                  }`}>
+                  <span className={`text-sm truncate ${selected === video.id ? 'text-indigo-300 font-medium' : 'text-slate-400'
+                    }`}>
                     {video.title || video.id}
                   </span>
                 </div>
@@ -215,8 +211,8 @@ const VideoSelector = ({
           <Video size={18} className="text-slate-500 group-hover:text-indigo-400 transition-colors shrink-0" />
           <span className="text-sm text-slate-300 truncate">{getSelectedName()}</span>
         </div>
-        <ChevronDown 
-          size={18} 
+        <ChevronDown
+          size={18}
           className={`text-slate-500 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
@@ -253,13 +249,12 @@ const VideoSelector = ({
                   ref={focusedIndex === 0 ? focusedItemRef : null}
                   onClick={() => handleSelect("All Videos")}
                   onMouseEnter={() => setFocusedIndex(0)}
-                  className={`w-full px-4 py-3 flex items-center justify-between transition-all ${
-                    selected === "All Videos"
-                      ? 'bg-indigo-600/20 text-indigo-300'
-                      : focusedIndex === 0
+                  className={`w-full px-4 py-3 flex items-center justify-between transition-all ${selected === "All Videos"
+                    ? 'bg-indigo-600/20 text-indigo-300'
+                    : focusedIndex === 0
                       ? 'bg-slate-700/70 text-slate-300'
                       : 'hover:bg-slate-700/50 text-slate-400'
-                  } ${focusedIndex === 0 ? 'ring-2 ring-indigo-500/50 ring-inset' : ''}`}
+                    } ${focusedIndex === 0 ? 'ring-2 ring-indigo-500/50 ring-inset' : ''}`}
                 >
                   <div className="flex items-center gap-3">
                     <Video size={16} />
@@ -274,24 +269,23 @@ const VideoSelector = ({
                   const listIndex = allowAll ? idx + 1 : idx;
                   const isSelected = selected === video.id;
                   const isFocused = focusedIndex === listIndex;
-                  
+
                   return (
                     <button
                       key={video.id}
                       ref={isFocused ? focusedItemRef : null}
                       onClick={() => handleSelect(video.id)}
                       onMouseEnter={() => setFocusedIndex(listIndex)}
-                      className={`w-full px-4 py-3 flex items-center justify-between transition-all ${
-                        isSelected
-                          ? 'bg-indigo-600/20 text-indigo-300'
-                          : isFocused
+                      className={`w-full px-4 py-3 flex items-center justify-between transition-all ${isSelected
+                        ? 'bg-indigo-600/20 text-indigo-300'
+                        : isFocused
                           ? 'bg-slate-700/70 text-slate-300'
                           : 'hover:bg-slate-700/50 text-slate-400'
-                      } ${isFocused ? 'ring-2 ring-indigo-500/50 ring-inset' : ''}`}
+                        } ${isFocused ? 'ring-2 ring-indigo-500/50 ring-inset' : ''}`}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <img 
-                          src={video.thumbnail} 
+                        <img
+                          src={video.thumbnail}
                           alt=""
                           className="w-12 h-8 rounded object-cover shrink-0"
                           onError={(e) => e.target.style.display = 'none'}
