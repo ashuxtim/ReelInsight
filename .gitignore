@@ -49,3 +49,15 @@ data/chroma_db/
 !data/raw_videos/.gitkeep
 !data/processed_audio/.gitkeep
 !data/processed_frames/.gitkeep
+
+# --- Large Downloaded Videos ---
+downloaded_videos/
+
+# Large media
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.wav
+*.mp3
+

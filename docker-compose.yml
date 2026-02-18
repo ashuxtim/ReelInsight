@@ -1,0 +1,63 @@
+services:
+  qdrant:
+    image: qdrant/qdrant
+    container_name: reel_qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  redis:
+    image: redis:alpine
+    container_name: reel_redis
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio
+    container_name: reel_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build: ./backend
+    container_name: reel_celery
+    command: celery -A worker.celery_app worker --loglevel=INFO --concurrency=1
+    volumes:
+      - ./backend:/app
+      - ./data:/data
+      - ./logs:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - REDIS_HOST=redis
+      - MINIO_ENDPOINT=minio:9000
+      # 👇 CHANGE THIS: Force the URL to point to the Host
+      - LLM_API_URL=http://host.docker.internal:11434
+      - OLLAMA_HOST=host.docker.internal
+    depends_on:
+      - redis
+      - qdrant
+      - minio
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  qdrant_data:
+  minio_data:

@@ -1,0 +1,20 @@
+[
+  {
+    "video_id": "1770020855_Starting_Photography_on_a_Budget_in_2026_This_is_What_I_d_Buy.",
+    "question": "What camera do you recommend for beginners?",
+    "correct_answer_keywords": ["Sony", "Canon", "Nikon", "ZV-E10", "R50"],
+    "correct_timestamp": 120
+  },
+  {
+    "video_id": "1770020855_Starting_Photography_on_a_Budget_in_2026_This_is_What_I_d_Buy.",
+    "question": "Why is lighting important?",
+    "correct_answer_keywords": ["shadows", "soft", "mood", "key light"],
+    "correct_timestamp": 300
+  },
+  {
+    "video_id": "1770020855_Starting_Photography_on_a_Budget_in_2026_This_is_What_I_d_Buy.",
+    "question": "What budget lens should I buy?",
+    "correct_answer_keywords": ["50mm", "prime", "kit lens", "1.8"],
+    "correct_timestamp": 450
+  }
+]
