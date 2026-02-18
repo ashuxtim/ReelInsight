@@ -22,8 +22,8 @@ jobs:
       # We skip the heavy GPU version of torch to save CI time/bandwidth
       run: |
         python -m pip install --upgrade pip
-        python -m pip install "setuptools<80" wheel
-        pip install -r backend/requirements.txt
+        python -m pip install "setuptools<70" wheel
+        pip install --no-build-isolation -r backend/requirements.txt
 
     - name: Basic Syntax Check
       # Checks for syntax errors in your python files
