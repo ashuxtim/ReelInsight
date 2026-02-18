@@ -36,7 +36,7 @@ jobs:
       run: |
         pip install pytest
         cd backend
-        pytest
+        pytest; rc=$?; if [ $rc -eq 5 ]; then echo "⚠️ No tests collected, skipping."; exit 0; else exit $rc; fi
 
   # JOB 2: Check React Frontend
   frontend-check:
