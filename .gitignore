@@ -61,3 +61,26 @@ downloaded_videos/
 *.wav
 *.mp3
 
+# Python local config
+.python-version
+
+# Pytest
+pytest.ini
+
+# Debug/Test files
+backend/tests/debug_qwen.py
+backend/tests/test_dataset.json
+backend/tests/test_gen.py
+
+# Training / ingestion scripts
+backend/train.py
+bulk_ingest.py
+
+# Local tools
+local_downloader.py
+merge_code.py
+
+# Structure / URL files
+structure_reelinsight.txt
+urls.txt
+urls1.txt
